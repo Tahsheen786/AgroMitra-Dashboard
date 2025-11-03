@@ -1,0 +1,6 @@
+streamlit
+pandas
+plotly
+requests
+geopy
+streamlit_js_eval
