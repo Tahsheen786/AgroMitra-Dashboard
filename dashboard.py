@@ -8,9 +8,10 @@ import math
 import random
 import urllib.parse
 from datetime import datetime
-from geopy.geocoders import Nominatim
 from streamlit_js_eval import streamlit_js_eval
-
+import streamlit.components.v1 as components
+import plotly.express as px
+import plotly.graph_objects as go
 # --------------------------------------------------------------------
 # API Keys
 # --------------------------------------------------------------------
@@ -164,11 +165,23 @@ def show_crop_production_chart(lat, lon, container):
 # Streamlit Layout and Logic
 # --------------------------------------------------------------------
 st.set_page_config(page_title="AgroMitra Dashboard", layout="wide")
-
+st.markdown("""
+    <style>
+        /* Reduce the top padding in the main content area */
+        .block-container {
+            padding-top: 0.25rem !important;
+        }
+    </style>
+""", unsafe_allow_html=True)
+if "page" not in st.session_state:
+    st.session_state.page = "Overview"
 # Sidebar Navigation
-st.sidebar.title("📊 Dashboard")
-page = st.sidebar.radio("", ["🏠 Overview", "🌦 Weather", "🗺️ Map"])
+st.sidebar.title("Dashboard")
+page = st.sidebar.radio("", ["Overview", "Past Trends"])
 st.sidebar.markdown("<hr>", unsafe_allow_html=True)
+
+
+
 
 # --------------------------------------------------------------------
 # Get Geolocation
@@ -194,8 +207,9 @@ else:
 # --------------------------------------------------------------------
 # PAGE: OVERVIEW
 # --------------------------------------------------------------------
-if page == "🏠 Overview":
-    st.title("🌾 AgroMitra Dashboard")
+
+if page == "Overview":
+    st.title("🌾 AgroKheti Dashboard")
 
     c1, c2, c3, c4 = st.columns(4)
 
@@ -246,7 +260,7 @@ if page == "🏠 Overview":
             c3.metric("🌾 Commodity Data", "Unavailable")
 
     st.markdown("---")
-    left, mid, _ = st.columns([3, 3, 1])
+    left, mid, _ = st.columns([4, 4, 0.01])
 
     if lat and lon:
         show_crop_production_chart(lat, lon, left)
@@ -271,27 +285,107 @@ if page == "🏠 Overview":
         except Exception as e:
             st.error(f"Error fetching weather: {e}")
 
-# --------------------------------------------------------------------
-# PAGE: MAP
-# --------------------------------------------------------------------
-elif page == "🗺️ Map":
-    st.header("🗺️ Redirecting to Map...")
-    map_url = "https://agrikheti.streamlit.app/"
-    st.markdown(
-        f"""
-        <meta http-equiv="refresh" content="0; url={map_url}">
-        <p>If you are not redirected automatically,
-        <a href="{map_url}" target="_blank">click here</a>.</p>
-        """,
-        unsafe_allow_html=True,
+elif page == "Past Trends":
+    st.title("Farmer’s Past Trends and Comparison")
+
+    # Sample data (replace with your backend or CSV data)
+    import pandas as pd
+    import plotly.express as px
+
+    data = {
+        "Year": [2020, 2021, 2022, 2023, 2024],
+        "Crop Yield (tons)": [3.5, 4.0, 3.8, 4.5, 4.2],
+        "Income (₹ in lakhs)": [1.2, 1.5, 1.4, 1.8, 1.7],
+        "Fertilizer Used (kg/acre)": [60, 58, 65, 70, 68],
+        "Rainfall (mm)": [820, 760, 850, 900, 870],
+    }
+    df = pd.DataFrame(data)
+
+    # Dropdown to choose what to compare
+    metric = st.selectbox("Select Metric to View:", ["Crop Yield (tons)", "Income (₹ in lakhs)"])
+
+    # Line chart for past trends
+    fig = px.line(
+        df,
+        x="Year",
+        y=metric,
+        title=f"{metric} Over the Years",
+        markers=True,
     )
+    st.plotly_chart(fig, use_container_width=True)
+
+    # --- 2️⃣ BAR CHART (Comparison) ---
+    st.subheader(f"Yearly Comparison of {metric}")
+    fig_bar = px.bar(
+        df,
+        x="Year",
+        y=metric,
+        text=metric,
+        title=f"{metric} Comparison (Bar Chart)",
+    )
+    fig_bar.update_traces(texttemplate='%{text:.2s}', textposition='outside')
+    fig_bar.update_layout(yaxis_title=metric)
+    st.plotly_chart(fig_bar, use_container_width=True)
+
+    # --- 3️⃣ SCATTER PLOT (Correlation: Yield vs Income) ---
+    st.subheader("Correlation Between Yield and Income")
+    fig_scatter = px.scatter(
+        df,
+        x="Crop Yield (tons)",
+        y="Income (₹ in lakhs)",
+        size="Rainfall (mm)",
+        color="Year",
+        hover_data=["Fertilizer Used (kg/acre)"],
+        title="Crop Yield vs Income (Bubble Size = Rainfall)",
+    )
+    st.plotly_chart(fig_scatter, use_container_width=True)
+
+    # --- 4️⃣ PERCENT CHANGE VISUALIZATION ---
+    st.subheader("📊 Year-over-Year Percentage Change")
+    df_change = df.copy()
+    for col in df.columns[1:]:
+        df_change[col] = df[col].pct_change() * 100
+
+    fig_change = go.Figure()
+    for col in df.columns[1:]:
+        fig_change.add_trace(go.Scatter(
+            x=df["Year"], y=df_change[col],
+            mode='lines+markers', name=col
+        ))
+    fig_change.update_layout(
+        title="Percentage Change Over Years",
+        xaxis_title="Year",
+        yaxis_title="Change (%)",
+        legend_title="Metric"
+    )
+    st.plotly_chart(fig_change, use_container_width=True)
+
+    # --- 5️⃣ MOVING AVERAGE TREND (Optional Smoother View) ---
+    st.subheader("📈 Smoothed 3-Year Moving Average (for Crop Yield)")
+    df["Yield_MA3"] = df["Crop Yield (tons)"].rolling(window=3).mean()
+    fig_ma = go.Figure()
+    fig_ma.add_trace(go.Scatter(x=df["Year"], y=df["Crop Yield (tons)"], mode='lines+markers', name="Actual Yield"))
+    fig_ma.add_trace(go.Scatter(x=df["Year"], y=df["Yield_MA3"], mode='lines', name="3-Year Moving Average"))
+    fig_ma.update_layout(title="Crop Yield Moving Average Trend", xaxis_title="Year", yaxis_title="Yield (tons)")
+    st.plotly_chart(fig_ma, use_container_width=True)
+
+# --------------------------------------------------------------------
+# PAGE: ADVISOR
+# --------------------------------------------------------------------
+if st.sidebar.button("🌾 Crop Advisor"):
+    crop_url = "https://agrikheti.streamlit.app/"
+    components.html(
+        f"""
+        <script>
+            window.open("{crop_url}", "_blank");
+        </script>
+        """,
+        height=0,
+    )
+
+
 
 # --------------------------------------------------------------------
 # PAGE: WEATHER
 # --------------------------------------------------------------------
-elif page == "🌦 Weather":
-    st.title("🌦 Real-Time Weather Data")
-    if lat and lon:
-        show_crop_production_chart(lat, lon, st)
-    else:
-        st.warning("📍 Please allow location access to view weather data.")
+
