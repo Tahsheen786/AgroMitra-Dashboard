@@ -372,6 +372,16 @@ elif page == "Past Trends":
 # --------------------------------------------------------------------
 # PAGE: ADVISOR
 # --------------------------------------------------------------------
+if st.sidebar.button("Analyze Your Soil"):
+    crop_url = "https://blynk.cloud/dashboard/563937/global/devices/1/organization/563937/devices/1787820/dashboard"
+    components.html(
+        f"""
+        <script>
+            window.open("{crop_url}", "_blank");
+        </script>
+        """,
+        height=0,
+    )
 if st.sidebar.button("🌾 Crop Advisor"):
     crop_url = "https://agrikheti.streamlit.app/"
     components.html(
@@ -388,4 +398,5 @@ if st.sidebar.button("🌾 Crop Advisor"):
 # --------------------------------------------------------------------
 # PAGE: WEATHER
 # --------------------------------------------------------------------
+
 
