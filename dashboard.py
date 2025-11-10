@@ -558,7 +558,6 @@ if page == "Overview":
             st.error(f"Error fetching weather: {e}")
 
 
-
 elif page == "Past Trends":
     import pandas as pd
     import plotly.express as px
@@ -700,130 +699,119 @@ elif page == "Past Trends":
     metric = st.selectbox("Select Metric to View:", ["Crop Yield (tons)", "Income (₹ in lakhs)"])
 
     # --- 1️⃣ LINE CHART ---
-    # --- 1️⃣ LINE CHART ---
-st.subheader(f"{metric} Over the Years")
-fig = px.line(
-    df,
-    x="Year",
-    y=metric,
-    color="Crop" if selected_crop == "All" else None,
-    markers=True,
-    title=f"{metric} Over the Years ({selected_crop})"
-)
-fig.update_layout(
-    plot_bgcolor=bg_color,
-    paper_bgcolor=bg_color,
-    font=dict(color=text_color),
-    title=dict(font=dict(color=text_color)),
-    xaxis=dict(showgrid=True, gridcolor=grid_color, color=text_color,
-               titlefont=dict(color=text_color), tickfont=dict(color=text_color)),
-    yaxis=dict(showgrid=True, gridcolor=grid_color, color=text_color,
-               titlefont=dict(color=text_color), tickfont=dict(color=text_color)),
-    legend=dict(font=dict(color=text_color))
-)
-st.plotly_chart(fig, use_container_width=True)
+    st.subheader(f"{metric} Over the Years")
+    fig = px.line(
+        df,
+        x="Year",
+        y=metric,
+        color="Crop" if selected_crop == "All" else None,
+        markers=True,
+        title=f"{metric} Over the Years ({selected_crop})"
+    )
+    fig.update_layout(
+        plot_bgcolor=bg_color,
+        paper_bgcolor=bg_color,
+        font_color=text_color,
+        title_font_color=text_color,
+        xaxis=dict(showgrid=True, gridcolor=grid_color, color=text_color, titlefont=dict(color=text_color), tickfont=dict(color=text_color)),
+        yaxis=dict(showgrid=True, gridcolor=grid_color, color=text_color, titlefont=dict(color=text_color), tickfont=dict(color=text_color)),
+        legend=dict(font=dict(color=text_color))
+    )
+    st.plotly_chart(fig, use_container_width=True)
 
-# --- 2️⃣ BAR CHART ---
-st.subheader(f"Yearly Comparison of {metric}")
-fig_bar = px.bar(
-    df,
-    x="Year",
-    y=metric,
-    color="Crop" if selected_crop == "All" else None,
-    text=metric,
-    title=f"{metric} Comparison by Year ({selected_crop})",
-)
-fig_bar.update_traces(texttemplate='%{text:.2s}', textposition='outside')
-fig_bar.update_layout(
-    plot_bgcolor=bg_color,
-    paper_bgcolor=bg_color,
-    font=dict(color=text_color),
-    title=dict(font=dict(color=text_color)),
-    yaxis_title=metric,
-    xaxis=dict(color=text_color, gridcolor=grid_color,
-               titlefont=dict(color=text_color), tickfont=dict(color=text_color)),
-    yaxis=dict(color=text_color, gridcolor=grid_color,
-               titlefont=dict(color=text_color), tickfont=dict(color=text_color)),
-    legend=dict(font=dict(color=text_color))
-)
-st.plotly_chart(fig_bar, use_container_width=True)
+    # --- 2️⃣ BAR CHART ---
+    st.subheader(f"Yearly Comparison of {metric}")
+    fig_bar = px.bar(
+        df,
+        x="Year",
+        y=metric,
+        color="Crop" if selected_crop == "All" else None,
+        text=metric,
+        title=f"{metric} Comparison by Year ({selected_crop})",
+    )
+    fig_bar.update_traces(texttemplate='%{text:.2s}', textposition='outside')
+    fig_bar.update_layout(
+        plot_bgcolor=bg_color,
+        paper_bgcolor=bg_color,
+        font_color=text_color,
+        title_font_color=text_color,
+        yaxis_title=metric,
+        xaxis=dict(color=text_color, gridcolor=grid_color, titlefont=dict(color=text_color), tickfont=dict(color=text_color)),
+        yaxis=dict(color=text_color, gridcolor=grid_color, titlefont=dict(color=text_color), tickfont=dict(color=text_color)),
+        legend=dict(font=dict(color=text_color))
+    )
+    st.plotly_chart(fig_bar, use_container_width=True)
 
-# --- 3️⃣ SCATTER PLOT ---
-st.subheader("Correlation Between Yield and Income")
-fig_scatter = px.scatter(
-    df,
-    x="Crop Yield (tons)",
-    y="Income (₹ in lakhs)",
-    color="Crop",
-    size="Rainfall (mm)",
-    hover_data=["Year", "Fertilizer Used (kg/acre)"],
-    title="Crop Yield vs Income (Bubble Size = Rainfall)"
-)
-fig_scatter.update_layout(
-    plot_bgcolor=bg_color,
-    paper_bgcolor=bg_color,
-    font=dict(color=text_color),
-    title=dict(font=dict(color=text_color)),
-    xaxis=dict(color=text_color, gridcolor=grid_color,
-               titlefont=dict(color=text_color), tickfont=dict(color=text_color)),
-    yaxis=dict(color=text_color, gridcolor=grid_color,
-               titlefont=dict(color=text_color), tickfont=dict(color=text_color)),
-    legend=dict(font=dict(color=text_color))
-)
-st.plotly_chart(fig_scatter, use_container_width=True)
+    # --- 3️⃣ SCATTER PLOT ---
+    st.subheader("Correlation Between Yield and Income")
+    fig_scatter = px.scatter(
+        df,
+        x="Crop Yield (tons)",
+        y="Income (₹ in lakhs)",
+        color="Crop",
+        size="Rainfall (mm)",
+        hover_data=["Year", "Fertilizer Used (kg/acre)"],
+        title="Crop Yield vs Income (Bubble Size = Rainfall)"
+    )
+    fig_scatter.update_layout(
+        plot_bgcolor=bg_color,
+        paper_bgcolor=bg_color,
+        font_color=text_color,
+        xaxis=dict(color=text_color, gridcolor=grid_color, titlefont=dict(color=text_color), tickfont=dict(color=text_color)),
+        yaxis=dict(color=text_color, gridcolor=grid_color, titlefont=dict(color=text_color), tickfont=dict(color=text_color)),
+        legend=dict(font=dict(color=text_color))
+    )
+    st.plotly_chart(fig_scatter, use_container_width=True)
 
-# --- 4️⃣ PERCENT CHANGE ---
-st.subheader("📊 Year-over-Year Percentage Change")
-df_change = df.copy()
-for col in df.columns[2:]:
-    df_change[col] = df.groupby("Crop")[col].pct_change() * 100
+    # --- 4️⃣ PERCENT CHANGE ---
+    st.subheader("📊 Year-over-Year Percentage Change")
+    df_change = df.copy()
+    for col in df.columns[2:]:
+        df_change[col] = df.groupby("Crop")[col].pct_change() * 100
 
-fig_change = go.Figure()
-for crop in df["Crop"].unique():
-    sub_df = df_change[df_change["Crop"] == crop]
-    fig_change.add_trace(go.Scatter(
-        x=sub_df["Year"], y=sub_df[metric],
-        mode='lines+markers', name=crop
-    ))
-fig_change.update_layout(
-    title=dict(text="Year-over-Year Percentage Change", font=dict(color=text_color)),
-    plot_bgcolor=bg_color,
-    paper_bgcolor=bg_color,
-    font=dict(color=text_color),
-    xaxis=dict(title="Year", color=text_color, gridcolor=grid_color,
-               titlefont=dict(color=text_color), tickfont=dict(color=text_color)),
-    yaxis=dict(title="Change (%)", color=text_color, gridcolor=grid_color,
-               titlefont=dict(color=text_color), tickfont=dict(color=text_color)),
-    legend=dict(font=dict(color=text_color))
-)
-st.plotly_chart(fig_change, use_container_width=True)
+    fig_change = go.Figure()
+    for crop in df["Crop"].unique():
+        sub_df = df_change[df_change["Crop"] == crop]
+        fig_change.add_trace(go.Scatter(
+            x=sub_df["Year"], y=sub_df[metric],
+            mode='lines+markers', name=crop
+        ))
+    fig_change.update_layout(
+        title="Year-over-Year Percentage Change",
+        plot_bgcolor=bg_color,
+        paper_bgcolor=bg_color,
+        font_color=text_color,
+        xaxis=dict(title="Year", color=text_color, gridcolor=grid_color, titlefont=dict(color=text_color), tickfont=dict(color=text_color)),
+        yaxis=dict(title="Change (%)", color=text_color, gridcolor=grid_color, titlefont=dict(color=text_color), tickfont=dict(color=text_color)),
+        legend=dict(font=dict(color=text_color))
+    )
+    st.plotly_chart(fig_change, use_container_width=True)
 
-# --- 5️⃣ MOVING AVERAGE ---
-st.subheader("📈 Smoothed 3-Year Moving Average (Crop Yield)")
-fig_ma = go.Figure()
-for crop in df["Crop"].unique():
-    sub_df = df[df["Crop"] == crop].copy()
-    sub_df["Yield_MA3"] = sub_df["Crop Yield (tons)"].rolling(window=3).mean()
-    fig_ma.add_trace(go.Scatter(
-        x=sub_df["Year"], y=sub_df["Crop Yield (tons)"],
-        mode='lines+markers', name=f"{crop} (Actual)"
-    ))
-    fig_ma.add_trace(go.Scatter(
-        x=sub_df["Year"], y=sub_df["Yield_MA3"],
-        mode='lines', name=f"{crop} (MA3)"
-    ))
-fig_ma.update_layout(
-    title=dict(text="Crop Yield 3-Year Moving Average Trend", font=dict(color=text_color)),
-    plot_bgcolor=bg_color,
-    paper_bgcolor=bg_color,
-    font=dict(color=text_color),
-    xaxis=dict(title="Year", color=text_color, gridcolor=grid_color,
-               titlefont=dict(color=text_color), tickfont=dict(color=text_color)),
-    yaxis=dict(title="Yield (tons)", color=text_color, gridcolor=grid_color,
-               titlefont=dict(color=text_color), tickfont=dict(color=text_color)),
-    legend=dict(font=dict(color=text_color))
-)
-st.plotly_chart(fig_ma, use_container_width=True)
+    # --- 5️⃣ MOVING AVERAGE ---
+    st.subheader("📈 Smoothed 3-Year Moving Average (Crop Yield)")
+    fig_ma = go.Figure()
+    for crop in df["Crop"].unique():
+        sub_df = df[df["Crop"] == crop].copy()
+        sub_df["Yield_MA3"] = sub_df["Crop Yield (tons)"].rolling(window=3).mean()
+        fig_ma.add_trace(go.Scatter(
+            x=sub_df["Year"], y=sub_df["Crop Yield (tons)"],
+            mode='lines+markers', name=f"{crop} (Actual)"
+        ))
+        fig_ma.add_trace(go.Scatter(
+            x=sub_df["Year"], y=sub_df["Yield_MA3"],
+            mode='lines', name=f"{crop} (MA3)"
+        ))
+    fig_ma.update_layout(
+        title="Crop Yield 3-Year Moving Average Trend",
+        plot_bgcolor=bg_color,
+        paper_bgcolor=bg_color,
+        font_color=text_color,
+        xaxis=dict(title="Year", color=text_color, gridcolor=grid_color, titlefont=dict(color=text_color), tickfont=dict(color=text_color)),
+        yaxis=dict(title="Yield (tons)", color=text_color, gridcolor=grid_color, titlefont=dict(color=text_color), tickfont=dict(color=text_color)),
+        legend=dict(font=dict(color=text_color))
+    )
+    st.plotly_chart(fig_ma, use_container_width=True)
+
 
 
 if st.sidebar.button("Analyze Your Soil"):
