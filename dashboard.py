@@ -559,88 +559,123 @@ if page == "Overview":
 
 
 elif page == "Past Trends":
-    st.title("Farmer’s Past Trends and Comparison")
+    st.title("🌾 Farmer’s Past Crop Trends and Comparison")
 
-    # Sample data (replace with your backend or CSV data)
     import pandas as pd
     import plotly.express as px
+    import plotly.graph_objects as go
 
+    # --- SAMPLE DATA: multiple crops (for rotation) ---
     data = {
-        "Year": [2020, 2021, 2022, 2023, 2024],
-        "Crop Yield (tons)": [3.5, 4.0, 3.8, 4.5, 4.2],
-        "Income (₹ in lakhs)": [1.2, 1.5, 1.4, 1.8, 1.7],
-        "Fertilizer Used (kg/acre)": [60, 58, 65, 70, 68],
-        "Rainfall (mm)": [820, 760, 850, 900, 870],
+        "Year": [2020, 2020, 2021, 2021, 2022, 2022, 2023, 2023, 2024, 2024],
+        "Crop": ["Wheat", "Rice", "Wheat", "Rice", "Wheat", "Rice", "Wheat", "Rice", "Wheat", "Rice"],
+        "Crop Yield (tons)": [3.2, 2.8, 3.6, 3.1, 3.4, 3.3, 4.0, 3.8, 3.9, 4.0],
+        "Income (₹ in lakhs)": [1.1, 0.9, 1.3, 1.2, 1.4, 1.3, 1.6, 1.5, 1.7, 1.6],
+        "Fertilizer Used (kg/acre)": [58, 62, 60, 63, 65, 67, 70, 72, 68, 74],
+        "Rainfall (mm)": [820, 810, 760, 770, 850, 860, 900, 890, 870, 880],
     }
     df = pd.DataFrame(data)
 
-    # Dropdown to choose what to compare
-    metric = st.selectbox("Select Metric to View:", ["Crop Yield (tons)", "Income (₹ in lakhs)"])
+    # --- Select Crop & Metric ---
+    crop_list = df["Crop"].unique()
+    crop_selected = st.selectbox("🌱 Select Crop for Analysis:", crop_list)
 
-    # Line chart for past trends
+    metric = st.selectbox(
+        "📊 Select Metric to View:",
+        ["Crop Yield (tons)", "Income (₹ in lakhs)"]
+    )
+
+    # Filter data for selected crop
+    df_crop = df[df["Crop"] == crop_selected]
+
+    # --- 1️⃣ LINE CHART: Trend over years ---
     fig = px.line(
-        df,
+        df_crop,
         x="Year",
         y=metric,
-        title=f"{metric} Over the Years",
+        title=f"{metric} Trend for {crop_selected}",
         markers=True,
+        color_discrete_sequence=["#2E8B57"]
     )
     st.plotly_chart(fig, use_container_width=True)
 
-    # --- 2️⃣ BAR CHART (Comparison) ---
-    st.subheader(f"Yearly Comparison of {metric}")
+    # --- 2️⃣ BAR CHART: Yearly Comparison ---
+    st.subheader(f"📅 Yearly Comparison of {metric} ({crop_selected})")
     fig_bar = px.bar(
-        df,
+        df_crop,
         x="Year",
         y=metric,
         text=metric,
-        title=f"{metric} Comparison (Bar Chart)",
+        color="Year",
+        title=f"{metric} Comparison for {crop_selected}",
     )
     fig_bar.update_traces(texttemplate='%{text:.2s}', textposition='outside')
-    fig_bar.update_layout(yaxis_title=metric)
     st.plotly_chart(fig_bar, use_container_width=True)
 
-    # --- 3️⃣ SCATTER PLOT (Correlation: Yield vs Income) ---
-    st.subheader("Correlation Between Yield and Income")
+    # --- 3️⃣ SCATTER: Correlation Yield vs Income ---
+    st.subheader(f"💰 Correlation: Yield vs Income ({crop_selected})")
     fig_scatter = px.scatter(
-        df,
+        df_crop,
         x="Crop Yield (tons)",
         y="Income (₹ in lakhs)",
         size="Rainfall (mm)",
         color="Year",
         hover_data=["Fertilizer Used (kg/acre)"],
-        title="Crop Yield vs Income (Bubble Size = Rainfall)",
+        title=f"Yield vs Income for {crop_selected} (Bubble = Rainfall)",
     )
     st.plotly_chart(fig_scatter, use_container_width=True)
 
-    # --- 4️⃣ PERCENT CHANGE VISUALIZATION ---
-    st.subheader("📊 Year-over-Year Percentage Change")
-    df_change = df.copy()
-    for col in df.columns[1:]:
-        df_change[col] = df[col].pct_change() * 100
+    # --- 4️⃣ PERCENT CHANGE OVER YEARS ---
+    st.subheader(f"📈 Year-over-Year Percentage Change ({crop_selected})")
+    df_change = df_crop.copy()
+    for col in df_crop.columns[2:]:
+        df_change[col] = df_crop[col].pct_change() * 100
 
     fig_change = go.Figure()
-    for col in df.columns[1:]:
+    for col in ["Crop Yield (tons)", "Income (₹ in lakhs)", "Fertilizer Used (kg/acre)"]:
         fig_change.add_trace(go.Scatter(
-            x=df["Year"], y=df_change[col],
+            x=df_crop["Year"], y=df_change[col],
             mode='lines+markers', name=col
         ))
     fig_change.update_layout(
         title="Percentage Change Over Years",
         xaxis_title="Year",
-        yaxis_title="Change (%)",
-        legend_title="Metric"
+        yaxis_title="Change (%)"
     )
     st.plotly_chart(fig_change, use_container_width=True)
 
-    # --- 5️⃣ MOVING AVERAGE TREND (Optional Smoother View) ---
-    st.subheader("📈 Smoothed 3-Year Moving Average (for Crop Yield)")
-    df["Yield_MA3"] = df["Crop Yield (tons)"].rolling(window=3).mean()
+    # --- 5️⃣ MOVING AVERAGE (for Crop Yield) ---
+    st.subheader(f"🌾 Smoothed 3-Year Moving Average for {crop_selected}")
+    df_crop["Yield_MA3"] = df_crop["Crop Yield (tons)"].rolling(window=3).mean()
+
     fig_ma = go.Figure()
-    fig_ma.add_trace(go.Scatter(x=df["Year"], y=df["Crop Yield (tons)"], mode='lines+markers', name="Actual Yield"))
-    fig_ma.add_trace(go.Scatter(x=df["Year"], y=df["Yield_MA3"], mode='lines', name="3-Year Moving Average"))
-    fig_ma.update_layout(title="Crop Yield Moving Average Trend", xaxis_title="Year", yaxis_title="Yield (tons)")
+    fig_ma.add_trace(go.Scatter(
+        x=df_crop["Year"], y=df_crop["Crop Yield (tons)"],
+        mode='lines+markers', name="Actual Yield"
+    ))
+    fig_ma.add_trace(go.Scatter(
+        x=df_crop["Year"], y=df_crop["Yield_MA3"],
+        mode='lines', name="3-Year Moving Average"
+    ))
+    fig_ma.update_layout(
+        title=f"{crop_selected} Yield Moving Average Trend",
+        xaxis_title="Year",
+        yaxis_title="Yield (tons)"
+    )
     st.plotly_chart(fig_ma, use_container_width=True)
+
+    # --- 6️⃣ MULTI-CROP COMPARISON (OPTIONAL) ---
+    st.subheader("🌍 Compare Multiple Crops (Overall Trend)")
+    fig_multi = px.line(
+        df,
+        x="Year",
+        y="Crop Yield (tons)",
+        color="Crop",
+        markers=True,
+        title="Crop Yield Comparison Across Crops"
+    )
+    st.plotly_chart(fig_multi, use_container_width=True)
+
 
 
 
@@ -665,5 +700,6 @@ if st.sidebar.button("🌾 Crop Advisor"):
         """,
         height=0,
     )
+
 
 
